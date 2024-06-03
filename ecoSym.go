@@ -10,23 +10,17 @@ import (
 	"github.com/fogleman/gg"
 )
 
-// Constants for island size and growth rate
-const (
-	islandSize   = 20
-	growthRate   = 1
-	updatePeriod = 10
-)
-
-// Generates a heatmap from a 20x20 grid of int values and saves it as a PNG.
+// Generates a heatmap from a 20x20 grid of float64 values and saves it as a PNG.
 func GenerateHeatmap(grid [][]int, filename string) error {
+	const size = 20
 	const scale = 20 // Scale factor for each cell in the grid
 
 	// Create a new image
-	dc := gg.NewContext(islandSize*scale, islandSize*scale)
+	dc := gg.NewContext(size*scale, size*scale)
 
 	// Set color gradient: from blue (cool) to red (hot)
-	for y := 0; y < islandSize; y++ {
-		for x := 0; x < islandSize; x++ {
+	for y := 0; y < size; y++ {
+		for x := 0; x < size; x++ {
 			value := float64(grid[y][x])
 			// Normalize the value to 0-1 for color mapping
 			normValue := value / 255.0 // Assuming grid values are in the range [0, 255]
@@ -51,21 +45,18 @@ func GenerateHeatmap(grid [][]int, filename string) error {
 	return nil
 }
 
-func getRandomCoords() (int, int) {
-	randomPlantX := rand.Intn(islandSize)
-	randomPlantY := rand.Intn(islandSize)
+func getRandomCoords(islandSize [2]int) (int, int) {
+	randomPlantX := rand.Intn(islandSize[0])
+	randomPlantY := rand.Intn(islandSize[1])
 	return randomPlantX, randomPlantY
 }
 
-func updatePlants(plants [][]int) [][]int {
+func updatePlants(plants [][]int, islandSizes int, growthRate int) [][]int {
 	newPlants := make([][]int, len(plants))
-	for i := range plants {
-		newPlants[i] = make([]int, len(plants[i]))
-		copy(newPlants[i], plants[i])
-	}
+	copy(newPlants, plants)
 
-	for i := 0; i < islandSize; i++ {
-		for j := 0; j < islandSize; j++ {
+	for i := 0; i < islandSizes; i++ {
+		for j := 0; j < islandSizes; j++ {
 			if newPlants[i][j] > 0 {
 				// Update current plant and spread to adjacent cells with boundary checks
 				newPlants[i][j] += growthRate // Assuming growthRate should be an integer
@@ -74,50 +65,47 @@ func updatePlants(plants [][]int) [][]int {
 				if i > 0 { // Check upper boundary
 					newPlants[i-1][j] += growthRate
 				}
-				if i < islandSize-1 { // Check lower boundary
+				if i < islandSizes-1 { // Check lower boundary
 					newPlants[i+1][j] += growthRate
 				}
 				if j > 0 { // Check left boundary
 					newPlants[i][j-1] += growthRate
 				}
-				if j < islandSize-1 { // Check right boundary
+				if j < islandSizes-1 { // Check right boundary
 					newPlants[i][j+1] += growthRate
 				}
 			}
 		}
 	}
-	return newPlants
-}
 
+	return plants
+}
 func main() {
-	// Initialize plants
-	plants := make([][]int, islandSize)
+	islandSizes := 20
+	islandSize := [2]int{islandSizes, islandSizes}
+	plantStart := 5
+	growthRate := 1
+	numberOfPlants := 5
+
+	plants := make([][]int, islandSize[0])
+
 	for i := range plants {
-		plants[i] = make([]int, islandSize)
+		plants[i] = make([]int, islandSize[1])
 	}
 
-	// Plant initial plants
-	for i := 0; i < islandSize/2; i++ {
-		randomPlantX, randomPlantY := getRandomCoords()
+	plantsLine := make([]int, 0, 5)
+
+	for i := 0; i < numberOfPlants; i++ {
+		randomPlantX, randomPlantY := getRandomCoords(islandSize)
 		plants[randomPlantX][randomPlantY] = 1
 	}
 
-	// Main loop
-	for updates := 1; ; updates++ {
-		// Update plants
-		plants = updatePlants(plants)
+	plants = updatePlants(plants, islandSizes, growthRate)
 
-		// Generate heatmap every 10 updates
-		if updates%updatePeriod == 0 {
-			filename := fmt.Sprintf("heatmap_update_%d.png", updates)
-			err := GenerateHeatmap(plants, filename)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("Generated heatmap for update", updates)
-		}
-
-		// Simulate delay (optional)
-		// time.Sleep(time.Second)
+	err := GenerateHeatmap(plants, "heatmap.png")
+	if err != nil {
+		panic(err)
 	}
+
+	fmt.Println(plants, islandSize, plantStart, growthRate, plantsLine)
 }
