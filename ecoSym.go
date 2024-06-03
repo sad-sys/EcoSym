@@ -2,48 +2,8 @@ package main
 
 import (
 	"fmt"
-	"image/color"
-	"image/png"
 	"math/rand"
-	"os"
-
-	"github.com/fogleman/gg"
 )
-
-// Generates a heatmap from a 20x20 grid of float64 values and saves it as a PNG.
-func GenerateHeatmap(grid [][]int, filename string) error {
-	const size = 20
-	const scale = 20 // Scale factor for each cell in the grid
-
-	// Create a new image
-	dc := gg.NewContext(size*scale, size*scale)
-
-	// Set color gradient: from blue (cool) to red (hot)
-	for y := 0; y < size; y++ {
-		for x := 0; x < size; x++ {
-			value := float64(grid[y][x])
-			// Normalize the value to 0-1 for color mapping
-			normValue := value / 255.0 // Assuming grid values are in the range [0, 255]
-			r := uint8(255 * normValue)
-			b := uint8(255 * (1 - normValue))
-			color := color.RGBA{R: r, G: 0, B: b, A: 255}
-			dc.SetColor(color)
-			dc.DrawRectangle(float64(x*scale), float64(y*scale), float64(scale), float64(scale))
-			dc.Fill()
-		}
-	}
-
-	// Save the image to a file
-	img := dc.Image()
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	png.Encode(file, img)
-
-	return nil
-}
 
 func getRandomCoords(islandSize [2]int) (int, int) {
 	randomPlantX := rand.Intn(islandSize[0])
@@ -101,11 +61,5 @@ func main() {
 	}
 
 	plants = updatePlants(plants, islandSizes, growthRate)
-
-	err := GenerateHeatmap(plants, "heatmap.png")
-	if err != nil {
-		panic(err)
-	}
-
 	fmt.Println(plants, islandSize, plantStart, growthRate, plantsLine)
 }
