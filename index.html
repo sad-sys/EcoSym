@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF8">
+<title>Plant Growth Simulation</title>
+<style>
+.grid {
+	display: grid;
+	grid-template-columns: repeat(20, 20px); /* Adjust based on grid size */
+}
+.cell {
+	width: 20px;
+	height: 20px;
+	background-color: #eee;
+	border: 1px solid #ddd;
+}
+.plant {
+	background-color: #7cfc00;
+}
+</style>
+</head>
+<body>
+<div id="grid" class="grid"></div>
+<script>
+const gridElement = document.getElementById('grid');
+const islandSize = 20; // Example size
+
+// Initialize grid cells
+for (let i = 0; i < islandSize; i++) {
+	for (let j = 0; j < islandSize; j++) {
+		const cell = document.createElement('div');
+		cell.className = 'cell';
+		gridElement.appendChild(cell);
+	}
+}
+
+// Function to update grid display based on plant data
+function displayPlants(plants) {
+	const cells = document.querySelectorAll('.cell');
+	cells.forEach(cell => { cell.classList.remove('plant'); });
+
+	plants.forEach((row, i) => {
+		row.forEach((plant, j) => {
+			if (plant > 0) {
+				const index = i * islandSize + j;
+				cells[index].classList.add('plant');
+			}
+		});
+	});
+}
+
+// Fetch and update grid periodically
+setInterval(() => {
+	fetch('/plants', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ islandSizes: islandSize, growthRate: 1, numberOfPlants: 5 })
+	})
+	.then(response => response.json())
+	.then(data => displayPlants(data))
+	.catch(error => console.error('Error:', error));
+}, 1000); // Update every second
+</script>
+</body>
+</html>
