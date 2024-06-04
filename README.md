@@ -1,9 +1,6 @@
-MAIN BRANCH IS MASTER
-
-
 # Island Ecology Simulation
 
-This Python script simulates the ecology of an island, focusing on the growth and spread of plants over time.
+This script simulates the ecology of an island, focusing on the growth and spread of plants over time, both in Python and in Go.
 
 ## Introduction
 
@@ -70,5 +67,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Inspired by ecology and simulation studies.
+- Inspired by a post on Reddit I saved years ago.g
 - Thanks to contributors and open-source libraries.
