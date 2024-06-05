@@ -16,6 +16,15 @@ func getRandomCoords(islandSize [2]int) (int, int) {
 	return randomPlantX, randomPlantY
 }
 
+func makePlants(islandSizes int) [][]int {
+
+	plants := make([][]int, islandSizes)
+	for i := range plants {
+		plants[i] = make([]int, islandSizes)
+	}
+	return plants
+}
+
 func sumPlants(plants [][]int) int {
 	count := 0
 	for i := 0; i < len(plants); i++ {
@@ -28,7 +37,7 @@ func sumPlants(plants [][]int) int {
 
 }
 
-func updatePlants(plants [][]int, islandSizes int, growthRate int) [][]int {
+func updatePlants(plants [][]int, islandSizes int, growthRate int, food [][]int) [][]int {
 	newPlants := make([][]int, len(plants))
 	for i := range plants {
 		newPlants[i] = make([]int, len(plants[i]))
@@ -38,24 +47,46 @@ func updatePlants(plants [][]int, islandSizes int, growthRate int) [][]int {
 	for i := 0; i < islandSizes; i++ {
 		for j := 0; j < islandSizes; j++ {
 			if plants[i][j] > 0 {
-				newPlants[i][j] += growthRate
-				if i > 0 {
-					newPlants[i-1][j] += growthRate
-				}
-				if i < islandSizes-1 {
-					newPlants[i+1][j] += growthRate
-				}
-				if j > 0 {
-					newPlants[i][j-1] += growthRate
-				}
-				if j < islandSizes-1 {
-					newPlants[i][j+1] += growthRate
+				if food[i][j] > 0 {
+					newPlants[i][j] += growthRate
+					if i > 0 {
+						newPlants[i-1][j] += growthRate
+					}
+					if i < islandSizes-1 {
+						newPlants[i+1][j] += growthRate
+					}
+					if j > 0 {
+						newPlants[i][j-1] += growthRate
+					}
+					if j < islandSizes-1 {
+						newPlants[i][j+1] += growthRate
+					}
+					food[i][j] -= 1
 				}
 			}
 		}
 	}
 
 	return newPlants
+}
+
+func makeFood(islandSizes int) [][]int {
+	food := make([][]int, islandSizes)
+	for i := range food {
+		food[i] = make([]int, islandSizes)
+		for j := range food[i] {
+			food[i][j] = 10
+		}
+	}
+
+	for i := 0; i < islandSizes; i++ {
+		for j := 0; j < islandSizes; j++ {
+			fmt.Printf("%2d ", food[i][j])
+		}
+		fmt.Println()
+
+	}
+	return food
 }
 
 func createHeatmap(plants [][]int, maxValue int) *image.Paletted {
@@ -100,17 +131,16 @@ func saveGIF(frames []*image.Paletted, filename string) {
 }
 
 func main() {
-	islandSizes := 20
+	islandSizes := 50
 	islandSize := [2]int{islandSizes, islandSizes}
 	growthRate := 5
 	numberOfPlants := 1
-	simLen := 3
+	simLen := 500
 	maxValue := 100
 
-	plants := make([][]int, islandSize[0])
-	for i := range plants {
-		plants[i] = make([]int, islandSize[1])
-	}
+	plants := makePlants(islandSizes)
+
+	food := makeFood(islandSizes)
 
 	for i := 0; i < numberOfPlants; i++ {
 		randomPlantX, randomPlantY := getRandomCoords(islandSize)
@@ -120,7 +150,7 @@ func main() {
 	frames := []*image.Paletted{}
 
 	for i := 0; i < simLen; i++ {
-		plants = updatePlants(plants, islandSizes, growthRate)
+		plants = updatePlants(plants, islandSizes, growthRate, food)
 
 		for i := 0; i < islandSizes; i++ {
 			for j := 0; j < islandSizes; j++ {
@@ -135,7 +165,8 @@ func main() {
 		frames = append(frames, heatmap)
 	}
 
+	fmt.Println(food)
 	// Save the frames as a GIF
-	saveGIF(frames, "heatmap.gif")
+	saveGIF(frames, "heatmap1.gif")
 	sumPlants(plants)
 }
